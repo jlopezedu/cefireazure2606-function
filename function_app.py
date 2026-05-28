@@ -9,7 +9,7 @@ app = func.FunctionApp()
 
 @app.blob_trigger(
     arg_name="myblob",
-    path="entrada/{name}",
+    path="comprimidos/{name}",
     connection="AzureWebJobsStorage"
 )
 def copy_blob(myblob: func.InputStream):
@@ -20,14 +20,13 @@ def copy_blob(myblob: func.InputStream):
         f"Nuevo archivo detectado: {blob_name}"
     )
 
-    # Leer variable de entorno
     connection_string = os.getenv(
         "AzureWebJobsStorage"
     )
 
     if not connection_string:
-        raise ValueError(
-            "No se encontró AzureWebJobsStorage"
+        raise Exception(
+            "No existe AzureWebJobsStorage"
         )
 
     blob_service_client = (
@@ -37,8 +36,8 @@ def copy_blob(myblob: func.InputStream):
         )
     )
 
-    source_container = "entrada"
-    destination_container = "procesados"
+    source_container = "comprimidos"
+    destination_container = "descomprimidos"
 
     source_blob = (
         blob_service_client
@@ -61,5 +60,7 @@ def copy_blob(myblob: func.InputStream):
     )
 
     logging.info(
-        f"Archivo copiado: {blob_name}"
+        f"Archivo copiado a "
+        f"{destination_container}: "
+        f"{blob_name}"
     )

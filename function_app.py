@@ -1,9 +1,11 @@
 import logging
+import os
 import azure.functions as func
 from azure.storage.blob import BlobServiceClient
 
 
 app = func.FunctionApp()
+
 
 @app.blob_trigger(
     arg_name="myblob",
@@ -18,18 +20,25 @@ def copy_blob(myblob: func.InputStream):
         f"Nuevo archivo detectado: {blob_name}"
     )
 
-    connection_string = (
-        "DefaultEndpointsProtocol=https;"
+    # Leer variable de entorno
+    connection_string = os.getenv(
+        "AzureWebJobsStorage"
     )
 
+    if not connection_string:
+        raise ValueError(
+            "No se encontró AzureWebJobsStorage"
+        )
+
     blob_service_client = (
-        BlobServiceClient.from_connection_string(
+        BlobServiceClient
+        .from_connection_string(
             connection_string
         )
     )
 
-    source_container = "comprimidos"
-    destination_container = "descomprimidos"
+    source_container = "entrada"
+    destination_container = "procesados"
 
     source_blob = (
         blob_service_client
